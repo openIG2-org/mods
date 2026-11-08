@@ -41,7 +41,8 @@ def read_secret_key(text):
     if b[2:4] != b"\0\0":
         raise ValueError("the secret key is password-protected; CI needs an unencrypted key (minisign -G -W)")
     key_id, sk, checksum = b[54:62], b[62:126], b[126:158]
-    if hashlib.blake2b(b"Ed" + key_id + sk, digest_size=32).digest() != checksum:
+    # minisign -W leaves the checksum zero (it only computes one when encrypting); sign() still checks sk's halves.
+    if checksum != bytes(32) and hashlib.blake2b(b"Ed" + key_id + sk, digest_size=32).digest() != checksum:
         raise ValueError("secret key checksum mismatch")
     return key_id, sk
 
