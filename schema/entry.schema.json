@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/openIG2-org/mods/schema/entry.schema.json",
+  "title": "openIG2 mod index entry (mods/<id>/<version>.toml)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "name", "author", "description", "license", "download", "size", "sha256"],
+  "properties": {
+    "id": {
+      "description": "The mod's stable name, as in its mod.toml: lower-case letters, digits, - and _.",
+      "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+    },
+    "version": {
+      "description": "Semantic version of this release (no build metadata).",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "author": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "description": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "license": {
+      "description": "SPDX licence expression that allows sharing, e.g. CC-BY-4.0, MIT, GPL-3.0-or-later.",
+      "type": "string", "pattern": "^[A-Za-z0-9.+-]+( (AND|OR|WITH) [A-Za-z0-9.+-]+)*$", "maxLength": 120
+    },
+    "requires": {
+      "description": "openIG2 versions it runs on, the mod.toml syntax: \">=0.7, <0.9\". Missing = any.",
+      "type": "string", "pattern": "^\\s*(\\*|(([<>]=?|=|\\^|~)?\\s*[0-9]+(\\.[0-9]+){0,2}(-[0-9A-Za-z.-]+)?)(\\s*,\\s*([<>]=?|=|\\^|~)?\\s*[0-9]+(\\.[0-9]+){0,2}(-[0-9A-Za-z.-]+)?)*)\\s*$"
+    },
+    "kind": { "description": "full (default) or visual (look-only).", "enum": ["full", "visual"] },
+    "depends": {
+      "description": "Mod id = version range it needs.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$" },
+      "additionalProperties": {
+        "type": "string", "pattern": "^\\s*(\\*|(([<>]=?|=|\\^|~)?\\s*[0-9]+(\\.[0-9]+){0,2}(-[0-9A-Za-z.-]+)?)(\\s*,\\s*([<>]=?|=|\\^|~)?\\s*[0-9]+(\\.[0-9]+){0,2}(-[0-9A-Za-z.-]+)?)*)\\s*$"
+      }
+    },
+    "conflicts": {
+      "type": "array", "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$" }
+    },
+    "picture": {
+      "description": "A PNG or JPEG screenshot: a GitHub release asset or raw.githubusercontent.com file.",
+      "type": "string", "maxLength": 500,
+      "pattern": "^https://(github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/releases/download/[^\\s?#]+|raw\\.githubusercontent\\.com/[^\\s?#]+)\\.(png|jpg|jpeg)$"
+    },
+    "download": {
+      "description": "The mod zip: a release asset of the author's repository (or of openIG2-org/mods).",
+      "type": "string", "maxLength": 500,
+      "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/releases/download/[^\\s?#/]+/[^\\s?#/]+\\.zip$"
+    },
+    "size": { "description": "The zip's size in bytes.", "type": "integer", "minimum": 22, "maximum": 1073741824 },
+    "sha256": { "description": "The zip's SHA-256, lower-case hex.", "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

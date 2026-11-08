@@ -1,0 +1,50 @@
+name: Check
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+env:
+  # openIG2-check --package's install-free format checks: "off" until the flag is in an openIG2 release,
+  # then "release" (the newest openIG2 release's Linux build) or "source" (built at OPENIG2_REF).
+  PACKAGE_CHECK: "off"
+  OPENIG2_REF: main
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt && sudo apt-get install -y minisign
+      - name: Tests
+        run: python -m unittest discover -s tests -v
+      - name: Get openIG2-check (release)
+        if: env.PACKAGE_CHECK == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/openig2" && cd "$RUNNER_TEMP/openig2"
+          gh release download -R openIG2-org/openIG2 -p 'openig2-*-linux-x64.tar.gz'
+          tar xzf openig2-*-linux-x64.tar.gz
+          bin=$(find "$PWD" -type f -name openIG2-check | head -1)
+          test -n "$bin" && chmod +x "$bin" && echo "OPENIG2_CHECK=$bin" >> "$GITHUB_ENV"
+      - name: Build openIG2-check (source)
+        if: env.PACKAGE_CHECK == 'source'
+        run: |
+          git clone --filter=blob:none https://github.com/openIG2-org/openIG2 "$RUNNER_TEMP/openig2"
+          cd "$RUNNER_TEMP/openig2" && git checkout "$OPENIG2_REF"
+          cd engine && cargo build --release -p ig2-check
+          echo "OPENIG2_CHECK=$PWD/target/release/ig2-check" >> "$GITHUB_ENV"
+      - name: Entries
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
+        run: |
+          args=()
+          if [ -n "$BASE" ]; then args+=(--base "$BASE" --download); fi
+          if [ -n "${OPENIG2_CHECK:-}" ]; then args+=(--package-check "$OPENIG2_CHECK --package {dir}"); fi
+          python scripts/check.py "${args[@]}"

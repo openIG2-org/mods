@@ -1,0 +1,36 @@
+name: Index
+on:
+  push:
+    branches: [main]
+    paths: ["mods/**", "keys/**", "scripts/**", ".github/workflows/index.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: index
+  cancel-in-progress: false
+jobs:
+  index:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Build and sign index.json
+        env:
+          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
+        run: |
+          export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+          python scripts/build_index.py out
+      - name: Publish to the rolling "index" release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view index >/dev/null 2>&1; then
+            gh release create index --title "Mod index" --latest=false \
+              --notes "The signed mod index the openIG2 client reads: index.json and index.json.minisig. Rebuilt on every change to main; don't download mods from here."
+          fi
+          # The signature goes up first: a client that catches the two files mid-update fails the check and retries.
+          gh release upload index out/index.json.minisig out/index.json --clobber
