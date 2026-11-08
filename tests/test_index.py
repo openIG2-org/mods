@@ -178,6 +178,17 @@ class Index(Repo):
             build_index.main([str(self.out)])
         self.assertFalse((self.out / "index.json").exists())
 
+    def test_rust_crate_unencrypted_key(self):
+        # The minisign crate writes unencrypted keys with kdf "Sc" and a plain checksum; an encrypted one fails it.
+        import base64
+        raw = bytearray(minisign._payload(self.secret))
+        raw[2:4] = b"Sc"
+        os.environ["MINISIGN_SECRET_KEY"] = base64.b64encode(raw).decode()
+        self.assertEqual(build_index.main([str(self.out)]), 0)
+        raw[70] ^= 1
+        with self.assertRaisesRegex(ValueError, "password-protected"):
+            minisign.read_secret_key(base64.b64encode(raw).decode())
+
     @unittest.skipUnless(shutil.which("minisign"), "minisign isn't on PATH")
     def test_key_made_by_minisign(self):
         sk, pk = self.tmp / "real.key", self.tmp / "keys" / "real.pub"

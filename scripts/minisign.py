@@ -38,12 +38,15 @@ def read_secret_key(text):
     b = _payload(text)
     if len(b) != 158 or b[:2] != b"Ed" or b[4:6] != b"B2":
         raise ValueError("not a minisign Ed25519 secret key")
-    if b[2:4] != b"\0\0":
-        raise ValueError("the secret key is password-protected; CI needs an unencrypted key (minisign -G -W)")
     key_id, sk, checksum = b[54:62], b[62:126], b[126:158]
-    # minisign -W leaves the checksum zero (it only computes one when encrypting); sign() still checks sk's halves.
-    if checksum != bytes(32) and hashlib.blake2b(b"Ed" + key_id + sk, digest_size=32).digest() != checksum:
-        raise ValueError("secret key checksum mismatch")
+    plain_ok = hashlib.blake2b(b"Ed" + key_id + sk, digest_size=32).digest() == checksum
+    if b[2:4] == b"\0\0":
+        # minisign -W leaves the checksum zero (it only computes one when encrypting); sign() still checks sk's halves.
+        if checksum != bytes(32) and not plain_ok:
+            raise ValueError("secret key checksum mismatch")
+    elif not (b[2:4] == b"Sc" and plain_ok):
+        # The Rust minisign crate marks its unencrypted keys "Sc" too; only a checksum that holds unencrypted tells.
+        raise ValueError("the secret key is password-protected; CI needs an unencrypted key (minisign -G -W)")
     return key_id, sk
 
 
