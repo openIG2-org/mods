@@ -5,6 +5,8 @@ repository holds one small TOML file per mod release and nothing else: the mods 
 their authors publish as GitHub release assets of their own repositories. Every change is a pull request, checked
 by CI; after a merge, CI builds one signed `index.json` that the client downloads.
 
+[`mods-src/`](mods-src/) holds the source of openIG2's own mods (the remaster); the index doesn't read it.
+
 ## The index the client reads
 
 | File | URL |
