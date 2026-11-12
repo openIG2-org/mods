@@ -1,0 +1,12 @@
+id = "remaster-look"
+version = "0.1.1"
+name = "openIG2 Remaster: look"
+author = "openIG2"
+description = "Smoother edges, soft shadows, glow, richer battle effects and a halo round the starmap's planets. Changes only what you see."
+requires = ">=0.7"
+license = "CC0-1.0"
+kind = "visual"
+size = 371501
+sha256 = "2d5a64a1cef3e9df1e9d88767fef1ddbb15d650ba81be22a908c553f387940ce"
+download = "https://github.com/openIG2-org/mods/releases/download/remaster-look-v0.1.1/remaster-look-0.1.1.zip"
+picture = "https://github.com/openIG2-org/mods/releases/download/remaster-look-v0.1.1/picture.png"
