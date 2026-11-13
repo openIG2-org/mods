@@ -1,0 +1,10 @@
+id = "texup-remacri"
+version = "1.0.0"
+name = "Texture pack (texup Remacri 4x)"
+description = "Upscaled game textures with texup (Remacri 4x)"
+requires = ">=0.7"
+license = "CC-BY-4.0"
+kind = "visual"
+size = 1205542703
+sha256 = "bb6fcede71e3b656e8f6769b3e9c70d36f9ea8d397355a05b06d862c83dfc2b2"
+download = ""
