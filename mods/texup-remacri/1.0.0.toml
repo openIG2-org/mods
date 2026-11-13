@@ -1,6 +1,7 @@
 id = "texup-remacri"
 version = "1.0.0"
 name = "Texture pack (texup Remacri 4x)"
+author = "openIG2"
 description = "Upscaled game textures with texup (Remacri 4x)"
 requires = ">=0.7"
 license = "CC-BY-4.0"
